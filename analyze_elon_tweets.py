@@ -10,15 +10,16 @@ from make_elon_csv import make_elon_csv
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-df', '--dataframe', help='Filename of dataframe', default='elon_db.csv', required=False)
-    parser.add_argument('-r', '--regex', help='Regular expression to search for.', required=True)
+    parser.add_argument('-r', '--regex', help='Regular expression to search for.', default=None)
     parser.add_argument('-c', '--case', help='Case sensitive: true or false', default=True)
     parser.add_argument('-u', '--use_existing', help='Use existing results?: true or false', default=False)
     args = parser.parse_args()
-    dataframe = args.dataframe
+
     criteria = args.regex
     case = args.case
     use_existing = args.use_existing
+
+    dataframe = 'elon_db.csv'
 
     if use_existing == 'true':
         result = pd.read_csv('result.csv', index_col=0)
@@ -35,7 +36,10 @@ def main():
             make_elon_csv(dataframe)
             elon_db = pd.read_csv(dataframe, index_col=0)
 
-        result = elon_db[elon_db['Tweet'].str.contains(criteria, regex=True, flags=flags)]
+        if criteria is not None:
+            result = elon_db[elon_db['Tweet'].str.contains(criteria, regex=True, flags=flags)]
+        else:
+            result = elon_db
         result = result.drop_duplicates(subset='Tweet', keep='first').reset_index(drop=True)
 
         print(str(len(result)) + ' results. Saving...')
